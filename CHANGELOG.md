@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Status cases are tested in their own executable, and CI gates line and branch coverage at 100 %.
 - CI installs Meson, Ninja and gcovr with `uv` instead of `pip`.
+- The README is a short landing page, with integration, API and design documentation in `docs/`. A `bitfield docs examples` test compiles every C example in the documentation.
 - Standardised CI, security policy, contributor guidance, SPDX headers, pkg-config generation, and coverage thresholds with the primitive family baseline.
 
 ### Deprecated
