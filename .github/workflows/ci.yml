@@ -134,3 +134,71 @@ jobs:
         with:
           name: coverage-report
           path: coverage-report/
+
+  # ---------------------------------------------------------------------------
+  # Cross-build the library with the TI C2000 code generation tools, where
+  # CHAR_BIT is 16, under both object formats with warnings as errors.
+  # ---------------------------------------------------------------------------
+  c2000:
+    name: "TI C2000 (CGT ${{ matrix.cgt }})"
+    runs-on: ubuntu-latest
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - cgt: "22.6.2"
+            sha256: "9773f338df7b7314bc459be2cd9d9bf329786da8de6531f8f2d3d38c1e9f5750"
+          - cgt: "25.11.1"
+            sha256: "2f3a978e24a53279c9796ad374c32b530fc58fd085fd71288597846fe169c821"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Meson and Ninja
+        run: python -m pip install --upgrade meson ninja
+
+      - name: Cache TI C2000 CGT
+        id: cache-cgt
+        uses: actions/cache@v4
+        with:
+          path: ~/ti
+          key: ti-cgt-c2000-${{ matrix.cgt }}
+
+      - name: Install TI C2000 CGT
+        if: steps.cache-cgt.outputs.cache-hit != 'true'
+        run: |
+          bin="ti_cgt_c2000_${{ matrix.cgt }}.LTS_linux-x64_installer.bin"
+          curl -sSfL --retry 3 -o "$RUNNER_TEMP/$bin" \
+            "https://dr-download.ti.com/software-development/ide-configuration-compiler-or-debugger/MD-xqxJ05PLfM/${{ matrix.cgt }}.LTS/$bin"
+          echo "${{ matrix.sha256 }}  $RUNNER_TEMP/$bin" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/$bin"
+          "$RUNNER_TEMP/$bin" --mode unattended --prefix "$HOME/ti"
+
+      - name: Configure and build (COFF and EABI)
+        run: |
+          CGT="$HOME/ti/ti-cgt-c2000_${{ matrix.cgt }}.LTS"
+          for abi in coffabi eabi; do
+            cat > "c2000-$abi.ini" <<INI
+          [binaries]
+          c = '$CGT/bin/cl2000'
+          ar = '$CGT/bin/ar2000'
+          strip = '$CGT/bin/strip2000'
+
+          [built-in options]
+          c_args = ['-v28', '--float_support=fpu32', '--abi=$abi', '-I$CGT/include']
+
+          [host_machine]
+          system = 'bare-metal'
+          cpu_family = 'c2000'
+          cpu = 'c28x'
+          endian = 'little'
+          INI
+            meson setup "build-$abi" --cross-file="c2000-$abi.ini" \
+              -Dbuild_tests=false -Dwerror=true
+            meson compile -C "build-$abi"
+          done

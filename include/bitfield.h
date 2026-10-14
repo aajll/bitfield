@@ -14,8 +14,12 @@
  *
  * No compile-time configuration is required. Both families are always
  * available and may be mixed freely within the same translation unit,
- * which is useful on platforms such as TI C2000 where 16-bit and 32-bit
- * peripheral registers coexist in the same driver.
+ * which is useful on targets where 16-bit and 32-bit peripheral registers
+ * coexist in the same driver.
+ *
+ * Bit positions, counts and lengths are uint_least8_t, and byte arrays are
+ * arrays of uint_least8_t holding one octet per element. Where CHAR_BIT is
+ * 16 only the low 8 bits of each element are read or written.
  */
 
 #ifndef BITFIELD_H
@@ -38,7 +42,7 @@
  *
  * If @p data is NULL or @p bit_pos >= 16, this function is a no-op.
  */
-void bitfield16_set(uint16_t *data, uint8_t bit_pos, bool value);
+void bitfield16_set(uint16_t *data, uint_least8_t bit_pos, bool value);
 
 /** Get the value of a single bit in a 16-bit field
  *
@@ -48,7 +52,7 @@ void bitfield16_set(uint16_t *data, uint8_t bit_pos, bool value);
  *
  * If @p data is NULL or @p bit_pos >= 16, this function returns false.
  */
-bool bitfield16_get(const uint16_t *data, uint8_t bit_pos);
+bool bitfield16_get(const uint16_t *data, uint_least8_t bit_pos);
 
 /** Clear a single bit in a 16-bit field (set to 0)
  *
@@ -57,7 +61,7 @@ bool bitfield16_get(const uint16_t *data, uint8_t bit_pos);
  *
  * If @p data is NULL or @p bit_pos >= 16, this function is a no-op.
  */
-void bitfield16_clear(uint16_t *data, uint8_t bit_pos);
+void bitfield16_clear(uint16_t *data, uint_least8_t bit_pos);
 
 /** Set a range of bits in a 16-bit field
  *
@@ -70,8 +74,8 @@ void bitfield16_clear(uint16_t *data, uint8_t bit_pos);
  * If @p data is NULL, @p start > @p end, or @p end >= 16, this
  * function is a no-op.
  */
-void bitfield16_set_range(uint16_t *data, uint8_t start, uint8_t end,
-                          uint32_t value);
+void bitfield16_set_range(uint16_t *data, uint_least8_t start,
+                          uint_least8_t end, uint32_t value);
 
 /** Get a range of bits from a 16-bit field
  *
@@ -82,7 +86,8 @@ void bitfield16_set_range(uint16_t *data, uint8_t start, uint8_t end,
  *
  * If @p data is NULL, @p start > @p end, or @p end >= 16, returns 0.
  */
-uint32_t bitfield16_get_range(const uint16_t *data, uint8_t start, uint8_t end);
+uint32_t bitfield16_get_range(const uint16_t *data, uint_least8_t start,
+                              uint_least8_t end);
 
 /** Count the number of set bits (1s) in a 16-bit field
  *
@@ -92,7 +97,8 @@ uint32_t bitfield16_get_range(const uint16_t *data, uint8_t start, uint8_t end);
  *
  * If @p data is NULL or @p num_bits > 16, returns 0.
  */
-uint8_t bitfield16_count_set(const uint16_t *data, uint8_t num_bits);
+uint_least8_t bitfield16_count_set(const uint16_t *data,
+                                   uint_least8_t num_bits);
 
 /** Count the number of unset bits (0s) in a 16-bit field
  *
@@ -102,7 +108,8 @@ uint8_t bitfield16_count_set(const uint16_t *data, uint8_t num_bits);
  *
  * If @p data is NULL or @p num_bits > 16, returns 0.
  */
-uint8_t bitfield16_count_unset(const uint16_t *data, uint8_t num_bits);
+uint_least8_t bitfield16_count_unset(const uint16_t *data,
+                                     uint_least8_t num_bits);
 
 /** Pack a byte array into an array of 16-bit words (little-endian)
  *
@@ -115,8 +122,8 @@ uint8_t bitfield16_count_unset(const uint16_t *data, uint8_t num_bits);
  * If the destination fills before all source bytes are consumed, packing
  * stops silently. If @p src or @p dst is NULL, this function is a no-op.
  */
-void bitfield16_pack(const uint8_t *src, uint8_t src_len, uint16_t *dst,
-                     uint8_t dst_len);
+void bitfield16_pack(const uint_least8_t *src, uint_least8_t src_len,
+                     uint16_t *dst, uint_least8_t dst_len);
 
 /** Unpack an array of 16-bit words into a byte array (little-endian)
  *
@@ -127,8 +134,8 @@ void bitfield16_pack(const uint8_t *src, uint8_t src_len, uint16_t *dst,
  *
  * If @p src or @p dst is NULL, this function is a no-op.
  */
-void bitfield16_unpack(const uint16_t *src, uint8_t src_len, uint8_t *dst,
-                       uint8_t dst_len);
+void bitfield16_unpack(const uint16_t *src, uint_least8_t src_len,
+                       uint_least8_t *dst, uint_least8_t dst_len);
 
 /** @} */
 
@@ -145,7 +152,7 @@ void bitfield16_unpack(const uint16_t *src, uint8_t src_len, uint8_t *dst,
  *
  * If @p data is NULL or @p bit_pos >= 32, this function is a no-op.
  */
-void bitfield32_set(uint32_t *data, uint8_t bit_pos, bool value);
+void bitfield32_set(uint32_t *data, uint_least8_t bit_pos, bool value);
 
 /** Get the value of a single bit in a 32-bit field
  *
@@ -155,7 +162,7 @@ void bitfield32_set(uint32_t *data, uint8_t bit_pos, bool value);
  *
  * If @p data is NULL or @p bit_pos >= 32, this function returns false.
  */
-bool bitfield32_get(const uint32_t *data, uint8_t bit_pos);
+bool bitfield32_get(const uint32_t *data, uint_least8_t bit_pos);
 
 /** Clear a single bit in a 32-bit field (set to 0)
  *
@@ -164,7 +171,7 @@ bool bitfield32_get(const uint32_t *data, uint8_t bit_pos);
  *
  * If @p data is NULL or @p bit_pos >= 32, this function is a no-op.
  */
-void bitfield32_clear(uint32_t *data, uint8_t bit_pos);
+void bitfield32_clear(uint32_t *data, uint_least8_t bit_pos);
 
 /** Set a range of bits in a 32-bit field
  *
@@ -177,8 +184,8 @@ void bitfield32_clear(uint32_t *data, uint8_t bit_pos);
  * If @p data is NULL, @p start > @p end, or @p end >= 32, this
  * function is a no-op.
  */
-void bitfield32_set_range(uint32_t *data, uint8_t start, uint8_t end,
-                          uint32_t value);
+void bitfield32_set_range(uint32_t *data, uint_least8_t start,
+                          uint_least8_t end, uint32_t value);
 
 /** Get a range of bits from a 32-bit field
  *
@@ -189,7 +196,8 @@ void bitfield32_set_range(uint32_t *data, uint8_t start, uint8_t end,
  *
  * If @p data is NULL, @p start > @p end, or @p end >= 32, returns 0.
  */
-uint32_t bitfield32_get_range(const uint32_t *data, uint8_t start, uint8_t end);
+uint32_t bitfield32_get_range(const uint32_t *data, uint_least8_t start,
+                              uint_least8_t end);
 
 /** Count the number of set bits (1s) in a 32-bit field
  *
@@ -199,7 +207,8 @@ uint32_t bitfield32_get_range(const uint32_t *data, uint8_t start, uint8_t end);
  *
  * If @p data is NULL or @p num_bits > 32, returns 0.
  */
-uint8_t bitfield32_count_set(const uint32_t *data, uint8_t num_bits);
+uint_least8_t bitfield32_count_set(const uint32_t *data,
+                                   uint_least8_t num_bits);
 
 /** Count the number of unset bits (0s) in a 32-bit field
  *
@@ -209,7 +218,8 @@ uint8_t bitfield32_count_set(const uint32_t *data, uint8_t num_bits);
  *
  * If @p data is NULL or @p num_bits > 32, returns 0.
  */
-uint8_t bitfield32_count_unset(const uint32_t *data, uint8_t num_bits);
+uint_least8_t bitfield32_count_unset(const uint32_t *data,
+                                     uint_least8_t num_bits);
 
 /** Pack a byte array into an array of 32-bit words (little-endian)
  *
@@ -222,8 +232,8 @@ uint8_t bitfield32_count_unset(const uint32_t *data, uint8_t num_bits);
  * If the destination fills before all source bytes are consumed, packing
  * stops silently. If @p src or @p dst is NULL, this function is a no-op.
  */
-void bitfield32_pack(const uint8_t *src, uint8_t src_len, uint32_t *dst,
-                     uint8_t dst_len);
+void bitfield32_pack(const uint_least8_t *src, uint_least8_t src_len,
+                     uint32_t *dst, uint_least8_t dst_len);
 
 /** Unpack an array of 32-bit words into a byte array (little-endian)
  *
@@ -234,8 +244,8 @@ void bitfield32_pack(const uint8_t *src, uint8_t src_len, uint32_t *dst,
  *
  * If @p src or @p dst is NULL, this function is a no-op.
  */
-void bitfield32_unpack(const uint32_t *src, uint8_t src_len, uint8_t *dst,
-                       uint8_t dst_len);
+void bitfield32_unpack(const uint32_t *src, uint_least8_t src_len,
+                       uint_least8_t *dst, uint_least8_t dst_len);
 
 /** @} */
 
@@ -253,7 +263,7 @@ void bitfield32_unpack(const uint32_t *src, uint8_t src_len, uint8_t *dst,
  *
  * If @p data is NULL, this function returns 0.
  */
-uint16_t bitfield_crc16(const uint8_t *data, uint16_t length,
+uint16_t bitfield_crc16(const uint_least8_t *data, uint16_t length,
                         uint16_t polynomial);
 
 /** @} */
