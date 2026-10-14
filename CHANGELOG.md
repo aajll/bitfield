@@ -16,6 +16,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Status cases are tested in their own executable, and CI gates line and branch coverage at 100 %.
 - Standardised CI, security policy, contributor guidance, SPDX headers, pkg-config generation, and coverage thresholds with the primitive family baseline.
 
+### Deprecated
+
+- `bitfield_crc16`, in favour of `ucrc_compute()` from the `ucrc` library; with polynomial `0x1021` it equals `ucrc_crc16_ccitt_false`. It stays until a major release.
+
 ### Fixed
 
 - Bit positions, counts, lengths and byte arrays use `uint_least8_t` instead of `uint8_t`, so `bitfield.h` compiles where `CHAR_BIT == 16`. Byte-addressed targets see the same types.
