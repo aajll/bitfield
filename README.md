@@ -12,7 +12,7 @@ A portable bit manipulation C library for safety-critical embedded systems.
 - **Mixed-width friendly** - 16-bit and 32-bit families freely mixable in the same translation unit (e.g. TI C2000 drivers with both 16-bit control registers and 32-bit data registers)
 - **Bit-level operations** - Individual bit access and bitfield manipulation
 - **Packing/unpacking** - Compact data representation for protocols
-- **CRC calculations** - Data integrity verification
+- **CRC (deprecated)** - `bitfield_crc16` remains for existing callers; new code uses the `ucrc` library
 
 ## Installation
 
@@ -111,11 +111,23 @@ bitfield_status_t bitfield32_pack(const uint_least8_t *src, uint_least8_t src_le
 bitfield_status_t bitfield32_unpack(const uint32_t *src, uint_least8_t src_len, uint_least8_t *dst, uint_least8_t dst_len);
 ```
 
-### CRC (field-width independent)
+### CRC (deprecated)
 
 ```c
 uint16_t bitfield_crc16(const uint_least8_t *data, uint16_t length, uint16_t polynomial);
 ```
+
+`bitfield_crc16` is deprecated in favour of the `ucrc` library and stays until a major release. It starts the register at `0xFFFF` with no reflection and no final XOR, so with polynomial `0x1021` it computes CRC-16/CCITT-FALSE (check value `0x29B1`):
+
+```c
+/* Before */
+uint16_t crc = bitfield_crc16(data, len, 0x1021U);
+
+/* After */
+uint16_t crc = (uint16_t)ucrc_compute(&ucrc_crc16_ccitt_false, data, len);
+```
+
+For another polynomial, define a `ucrc_model_t` with that `poly`, `init` `0xFFFF`, `xorout` `0`, `width` 16, no reflection and a `NULL` table.
 
 ## Input Validation
 
@@ -144,7 +156,6 @@ meson test -C build
 3. **State Encoding** - Compact state representation in state machines
 4. **Data Compression** - Space-efficient storage for constrained systems
 5. **Bitmask Operations** - Event flag management and bitmask testing
-6. **Error Detection** - CRC for data integrity verification
 
 ## Notes
 

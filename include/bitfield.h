@@ -309,7 +309,14 @@ bitfield_status_t bitfield32_unpack(const uint32_t *src, uint_least8_t src_len,
  * @param polynomial CRC polynomial (e.g., 0x8005 for CRC-16)
  * @return Calculated CRC value
  *
- * If @p data is NULL, this function returns 0.
+ * The register starts at 0xFFFF, input and output are not reflected, and
+ * there is no final XOR. If @p data is NULL, this function returns 0.
+ *
+ * @deprecated Use ucrc_compute() from the ucrc library. With polynomial
+ *             0x1021 this function computes CRC-16/CCITT-FALSE, which is
+ *             ucrc_compute(&ucrc_crc16_ccitt_false, data, length); other
+ *             polynomials need a ucrc_model_t with init 0xFFFF, xorout 0
+ *             and no reflection. Kept until a major release.
  */
 uint16_t bitfield_crc16(const uint_least8_t *data, uint16_t length,
                         uint16_t polynomial);

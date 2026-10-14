@@ -539,6 +539,19 @@ test_crc(void)
         printf("CRC calculation: PASSED\n");
 }
 
+/* With polynomial 0x1021 the result is CRC-16/CCITT-FALSE, the model the
+ * deprecation note maps to ucrc; 0x29B1 is its catalogued check value. */
+static void
+test_crc_matches_ccitt_false(void)
+{
+        const uint_least8_t check[9] = {'1', '2', '3', '4', '5',
+                                        '6', '7', '8', '9'};
+
+        assert(bitfield_crc16(check, 9U, 0x1021U) == 0x29B1U);
+
+        printf("CRC CCITT-FALSE check value: PASSED\n");
+}
+
 static void
 test_crc_edge_cases(void)
 {
@@ -690,6 +703,7 @@ main(void)
         test_pack_large_buffer();
         test_mixed_width_usage();
         test_crc();
+        test_crc_matches_ccitt_false();
         test_crc_edge_cases();
         test_crc_variations();
         test_range_overlap_16();
