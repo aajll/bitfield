@@ -11,17 +11,19 @@
 
 /* ── 16-bit operations ──────────────────────────────────────────────────────
  *
- * Internal accumulator: uint32_t (one word wider than uint16_t).
- * This keeps all shift operations well-defined per MISRA C:2012 Rule 12.2:
- * the maximum shift count for 16-bit ops is 16, which is safely within the
- * 32-bit accumulator's width of 32.
+ * Range masks use a uint32_t accumulator, one word wider than uint16_t, so
+ * the widest shift (16) stays below the accumulator width (MISRA C:2023
+ * Rule 12.2).
  */
 
-void
+bitfield_status_t
 bitfield16_set(uint16_t *data, uint_least8_t bit_pos, bool value)
 {
-        if ((data == NULL) || (bit_pos >= 16U)) {
-                return;
+        if (data == NULL) {
+                return BITFIELD_STATUS_NULL_POINTER;
+        }
+        if (bit_pos >= 16U) {
+                return BITFIELD_STATUS_OUT_OF_RANGE;
         }
 
         if (value) {
@@ -29,6 +31,7 @@ bitfield16_set(uint16_t *data, uint_least8_t bit_pos, bool value)
         } else {
                 *data &= (uint16_t)(~((uint16_t)1U << bit_pos));
         }
+        return BITFIELD_STATUS_OK;
 }
 
 bool
@@ -41,25 +44,32 @@ bitfield16_get(const uint16_t *data, uint_least8_t bit_pos)
         return (bool)((*data & (uint16_t)((uint16_t)1U << bit_pos)) != 0U);
 }
 
-void
+bitfield_status_t
 bitfield16_clear(uint16_t *data, uint_least8_t bit_pos)
 {
-        if ((data == NULL) || (bit_pos >= 16U)) {
-                return;
+        if (data == NULL) {
+                return BITFIELD_STATUS_NULL_POINTER;
+        }
+        if (bit_pos >= 16U) {
+                return BITFIELD_STATUS_OUT_OF_RANGE;
         }
 
         *data &= (uint16_t)(~((uint16_t)1U << bit_pos));
+        return BITFIELD_STATUS_OK;
 }
 
-void
+bitfield_status_t
 bitfield16_set_range(uint16_t *data, uint_least8_t start, uint_least8_t end,
                      uint32_t value)
 {
         uint32_t mask;
         uint_least8_t width;
 
-        if ((data == NULL) || (start > end) || (end >= 16U)) {
-                return;
+        if (data == NULL) {
+                return BITFIELD_STATUS_NULL_POINTER;
+        }
+        if ((start > end) || (end >= 16U)) {
+                return BITFIELD_STATUS_OUT_OF_RANGE;
         }
 
         width = (uint_least8_t)(end - start + 1U);
@@ -67,6 +77,7 @@ bitfield16_set_range(uint16_t *data, uint_least8_t start, uint_least8_t end,
 
         *data = (uint16_t)((((uint32_t)*data) & (~mask))
                            | ((value << start) & mask));
+        return BITFIELD_STATUS_OK;
 }
 
 uint32_t
@@ -117,80 +128,65 @@ bitfield16_count_unset(const uint16_t *data, uint_least8_t num_bits)
         return (uint_least8_t)(num_bits - bitfield16_count_set(data, num_bits));
 }
 
-void
+bitfield_status_t
 bitfield16_pack(const uint_least8_t *src, uint_least8_t src_len, uint16_t *dst,
                 uint_least8_t dst_len)
 {
-        uint32_t accum = 0U;
-        uint_least8_t bits = 0U;
-        uint_least8_t di = 0U;
-
         if ((src == NULL) || (dst == NULL)) {
-                return;
+                return BITFIELD_STATUS_NULL_POINTER;
         }
 
-        for (uint_least8_t i = 0U; i < src_len; i++) {
-                accum |= ((uint32_t)src[i] & 0xFFU) << bits;
-                bits = (uint_least8_t)(bits + 8U);
+        const uint_fast16_t words = ((uint_fast16_t)src_len + (2U - 1U)) / 2U;
+        const uint_fast16_t n = (words < dst_len) ? words : dst_len;
 
-                while ((bits >= 16U) && (di < dst_len)) {
-                        dst[di] = (uint16_t)(accum & 0xFFFFU);
-                        di++;
-                        accum >>= 16U;
-                        bits = (uint_least8_t)(bits - 16U);
+        for (uint_fast16_t w = 0U; w < n; w++) {
+                const uint_fast16_t i = 2U * w;
+                uint32_t word = (uint32_t)src[i] & 0xFFU;
+
+                if ((i + 1U) < src_len) {
+                        word |= ((uint32_t)src[i + 1U] & 0xFFU) << 8U;
                 }
-
-                if (di >= dst_len) {
-                        return;
-                }
+                dst[w] = (uint16_t)word;
         }
 
-        if ((bits != 0U) && (di < dst_len)) {
-                dst[di] = (uint16_t)(accum & 0xFFFFU);
-        }
+        return (words > dst_len) ? BITFIELD_STATUS_TRUNCATED
+                                 : BITFIELD_STATUS_OK;
 }
 
-void
+bitfield_status_t
 bitfield16_unpack(const uint16_t *src, uint_least8_t src_len,
                   uint_least8_t *dst, uint_least8_t dst_len)
 {
-        uint32_t accum = 0U;
-        uint_least8_t bits = 0U;
-        uint_least8_t di = 0U;
-
         if ((src == NULL) || (dst == NULL)) {
-                return;
+                return BITFIELD_STATUS_NULL_POINTER;
         }
 
-        for (uint_least8_t i = 0U; i < src_len; i++) {
-                accum |= ((uint32_t)src[i]) << bits;
-                bits = (uint_least8_t)(bits + 16U);
+        const uint_fast16_t octets = 2U * (uint_fast16_t)src_len;
+        const uint_fast16_t n = (octets < dst_len) ? octets : dst_len;
 
-                while ((bits >= 8U) && (di < dst_len)) {
-                        dst[di] = (uint_least8_t)(accum & 0xFFU);
-                        di++;
-                        accum >>= 8U;
-                        bits = (uint_least8_t)(bits - 8U);
-                }
-
-                if (di >= dst_len) {
-                        return;
-                }
+        for (uint_fast16_t b = 0U; b < n; b++) {
+                dst[b] =
+                    (uint_least8_t)((src[b / 2U] >> (8U * (b % 2U))) & 0xFFU);
         }
+
+        return (octets > dst_len) ? BITFIELD_STATUS_TRUNCATED
+                                  : BITFIELD_STATUS_OK;
 }
 
 /* ── 32-bit operations ──────────────────────────────────────────────────────
  *
- * Internal accumulator: uint64_t (one word wider than uint32_t).
- * The maximum shift count for 32-bit ops is 32, which is safely within the
- * 64-bit accumulator's width of 64.
+ * Range masks use a uint64_t accumulator, one word wider than uint32_t, so
+ * the widest shift (32) stays below the accumulator width.
  */
 
-void
+bitfield_status_t
 bitfield32_set(uint32_t *data, uint_least8_t bit_pos, bool value)
 {
-        if ((data == NULL) || (bit_pos >= 32U)) {
-                return;
+        if (data == NULL) {
+                return BITFIELD_STATUS_NULL_POINTER;
+        }
+        if (bit_pos >= 32U) {
+                return BITFIELD_STATUS_OUT_OF_RANGE;
         }
 
         if (value) {
@@ -198,6 +194,7 @@ bitfield32_set(uint32_t *data, uint_least8_t bit_pos, bool value)
         } else {
                 *data &= (uint32_t)(~((uint32_t)1U << bit_pos));
         }
+        return BITFIELD_STATUS_OK;
 }
 
 bool
@@ -210,25 +207,32 @@ bitfield32_get(const uint32_t *data, uint_least8_t bit_pos)
         return (bool)((*data & (uint32_t)((uint32_t)1U << bit_pos)) != 0U);
 }
 
-void
+bitfield_status_t
 bitfield32_clear(uint32_t *data, uint_least8_t bit_pos)
 {
-        if ((data == NULL) || (bit_pos >= 32U)) {
-                return;
+        if (data == NULL) {
+                return BITFIELD_STATUS_NULL_POINTER;
+        }
+        if (bit_pos >= 32U) {
+                return BITFIELD_STATUS_OUT_OF_RANGE;
         }
 
         *data &= (uint32_t)(~((uint32_t)1U << bit_pos));
+        return BITFIELD_STATUS_OK;
 }
 
-void
+bitfield_status_t
 bitfield32_set_range(uint32_t *data, uint_least8_t start, uint_least8_t end,
                      uint32_t value)
 {
         uint64_t mask;
         uint_least8_t width;
 
-        if ((data == NULL) || (start > end) || (end >= 32U)) {
-                return;
+        if (data == NULL) {
+                return BITFIELD_STATUS_NULL_POINTER;
+        }
+        if ((start > end) || (end >= 32U)) {
+                return BITFIELD_STATUS_OUT_OF_RANGE;
         }
 
         width = (uint_least8_t)(end - start + 1U);
@@ -236,6 +240,7 @@ bitfield32_set_range(uint32_t *data, uint_least8_t start, uint_least8_t end,
 
         *data = (uint32_t)((((uint64_t)*data) & (~mask))
                            | (((uint64_t)value << start) & mask));
+        return BITFIELD_STATUS_OK;
 }
 
 uint32_t
@@ -286,66 +291,50 @@ bitfield32_count_unset(const uint32_t *data, uint_least8_t num_bits)
         return (uint_least8_t)(num_bits - bitfield32_count_set(data, num_bits));
 }
 
-void
+bitfield_status_t
 bitfield32_pack(const uint_least8_t *src, uint_least8_t src_len, uint32_t *dst,
                 uint_least8_t dst_len)
 {
-        uint64_t accum = 0U;
-        uint_least8_t bits = 0U;
-        uint_least8_t di = 0U;
-
         if ((src == NULL) || (dst == NULL)) {
-                return;
+                return BITFIELD_STATUS_NULL_POINTER;
         }
 
-        for (uint_least8_t i = 0U; i < src_len; i++) {
-                accum |= ((uint64_t)src[i] & 0xFFU) << bits;
-                bits = (uint_least8_t)(bits + 8U);
+        const uint_fast16_t words = ((uint_fast16_t)src_len + (4U - 1U)) / 4U;
+        const uint_fast16_t n = (words < dst_len) ? words : dst_len;
 
-                while ((bits >= 32U) && (di < dst_len)) {
-                        dst[di] = (uint32_t)(accum & 0xFFFFFFFFU);
-                        di++;
-                        accum >>= 32U;
-                        bits = (uint_least8_t)(bits - 32U);
+        for (uint_fast16_t w = 0U; w < n; w++) {
+                const uint_fast16_t i = 4U * w;
+                uint32_t word = 0U;
+
+                for (uint_fast16_t k = 0U; ((i + k) < src_len) && (k < 4U);
+                     k++) {
+                        word |= ((uint32_t)src[i + k] & 0xFFU) << (8U * k);
                 }
-
-                if (di >= dst_len) {
-                        return;
-                }
+                dst[w] = word;
         }
 
-        if ((bits != 0U) && (di < dst_len)) {
-                dst[di] = (uint32_t)(accum & 0xFFFFFFFFU);
-        }
+        return (words > dst_len) ? BITFIELD_STATUS_TRUNCATED
+                                 : BITFIELD_STATUS_OK;
 }
 
-void
+bitfield_status_t
 bitfield32_unpack(const uint32_t *src, uint_least8_t src_len,
                   uint_least8_t *dst, uint_least8_t dst_len)
 {
-        uint64_t accum = 0U;
-        uint_least8_t bits = 0U;
-        uint_least8_t di = 0U;
-
         if ((src == NULL) || (dst == NULL)) {
-                return;
+                return BITFIELD_STATUS_NULL_POINTER;
         }
 
-        for (uint_least8_t i = 0U; i < src_len; i++) {
-                accum |= ((uint64_t)src[i]) << bits;
-                bits = (uint_least8_t)(bits + 32U);
+        const uint_fast16_t octets = 4U * (uint_fast16_t)src_len;
+        const uint_fast16_t n = (octets < dst_len) ? octets : dst_len;
 
-                while ((bits >= 8U) && (di < dst_len)) {
-                        dst[di] = (uint_least8_t)(accum & 0xFFU);
-                        di++;
-                        accum >>= 8U;
-                        bits = (uint_least8_t)(bits - 8U);
-                }
-
-                if (di >= dst_len) {
-                        return;
-                }
+        for (uint_fast16_t b = 0U; b < n; b++) {
+                dst[b] =
+                    (uint_least8_t)((src[b / 4U] >> (8U * (b % 4U))) & 0xFFU);
         }
+
+        return (octets > dst_len) ? BITFIELD_STATUS_TRUNCATED
+                                  : BITFIELD_STATUS_OK;
 }
 
 /* ── CRC ────────────────────────────────────────────────────────────────────*/

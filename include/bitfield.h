@@ -29,6 +29,24 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/** Result of a function that modifies a field or buffer.
+ *
+ * @details
+ * - ::BITFIELD_STATUS_OK            the operation completed.
+ * - ::BITFIELD_STATUS_NULL_POINTER  a pointer argument was NULL; nothing
+ *   was written.
+ * - ::BITFIELD_STATUS_OUT_OF_RANGE  a bit position or range lies outside
+ *   the field; nothing was written.
+ * - ::BITFIELD_STATUS_TRUNCATED     the destination was too small; it was
+ *   filled as far as it goes and the rest of the source was ignored.
+ */
+typedef enum {
+        BITFIELD_STATUS_OK = 0,
+        BITFIELD_STATUS_NULL_POINTER = 1,
+        BITFIELD_STATUS_OUT_OF_RANGE = 2,
+        BITFIELD_STATUS_TRUNCATED = 3
+} bitfield_status_t;
+
 /** @defgroup bitfield16 16-bit Bitfield Operations
  * @brief Operations on a single @c uint16_t field
  * @{
@@ -40,9 +58,11 @@
  * @param bit_pos Bit position (0 = LSB, 15 = MSB)
  * @param value   Boolean value to set (true = 1, false = 0)
  *
- * If @p data is NULL or @p bit_pos >= 16, this function is a no-op.
+ * @return ::BITFIELD_STATUS_OK, ::BITFIELD_STATUS_NULL_POINTER if @p data
+ *         is NULL, or ::BITFIELD_STATUS_OUT_OF_RANGE if @p bit_pos >= 16.
  */
-void bitfield16_set(uint16_t *data, uint_least8_t bit_pos, bool value);
+bitfield_status_t bitfield16_set(uint16_t *data, uint_least8_t bit_pos,
+                                 bool value);
 
 /** Get the value of a single bit in a 16-bit field
  *
@@ -59,9 +79,10 @@ bool bitfield16_get(const uint16_t *data, uint_least8_t bit_pos);
  * @param data    Pointer to the 16-bit field
  * @param bit_pos Bit position (0 = LSB, 15 = MSB)
  *
- * If @p data is NULL or @p bit_pos >= 16, this function is a no-op.
+ * @return ::BITFIELD_STATUS_OK, ::BITFIELD_STATUS_NULL_POINTER if @p data
+ *         is NULL, or ::BITFIELD_STATUS_OUT_OF_RANGE if @p bit_pos >= 16.
  */
-void bitfield16_clear(uint16_t *data, uint_least8_t bit_pos);
+bitfield_status_t bitfield16_clear(uint16_t *data, uint_least8_t bit_pos);
 
 /** Set a range of bits in a 16-bit field
  *
@@ -70,12 +91,14 @@ void bitfield16_clear(uint16_t *data, uint_least8_t bit_pos);
  * @param end   End bit position (inclusive, must be < 16)
  * @param value Value to write (LSB of value maps to @p start)
  *
+ * @return ::BITFIELD_STATUS_OK, ::BITFIELD_STATUS_NULL_POINTER if @p data
+ *         is NULL, or ::BITFIELD_STATUS_OUT_OF_RANGE if @p start > @p end
+ *         or @p end >= 16.
+ *
  * Bits outside the range [@p start, @p end] are preserved.
- * If @p data is NULL, @p start > @p end, or @p end >= 16, this
- * function is a no-op.
  */
-void bitfield16_set_range(uint16_t *data, uint_least8_t start,
-                          uint_least8_t end, uint32_t value);
+bitfield_status_t bitfield16_set_range(uint16_t *data, uint_least8_t start,
+                                       uint_least8_t end, uint32_t value);
 
 /** Get a range of bits from a 16-bit field
  *
@@ -118,12 +141,17 @@ uint_least8_t bitfield16_count_unset(const uint16_t *data,
  * @param dst     Destination array of 16-bit words
  * @param dst_len Length of destination array in words
  *
- * Bytes are packed two at a time into each destination word, LSB first.
- * If the destination fills before all source bytes are consumed, packing
- * stops silently. If @p src or @p dst is NULL, this function is a no-op.
+ * @return ::BITFIELD_STATUS_OK, ::BITFIELD_STATUS_NULL_POINTER if @p src
+ *         or @p dst is NULL, or ::BITFIELD_STATUS_TRUNCATED if @p dst
+ *         holds fewer words than the source needs.
+ *
+ * Bytes are packed two at a time into each destination word, LSB first;
+ * a final partial word has its unused upper bytes zeroed. On truncation
+ * all @p dst_len words are written.
  */
-void bitfield16_pack(const uint_least8_t *src, uint_least8_t src_len,
-                     uint16_t *dst, uint_least8_t dst_len);
+bitfield_status_t bitfield16_pack(const uint_least8_t *src,
+                                  uint_least8_t src_len, uint16_t *dst,
+                                  uint_least8_t dst_len);
 
 /** Unpack an array of 16-bit words into a byte array (little-endian)
  *
@@ -132,10 +160,15 @@ void bitfield16_pack(const uint_least8_t *src, uint_least8_t src_len,
  * @param dst     Destination byte array
  * @param dst_len Length of destination array in bytes
  *
- * If @p src or @p dst is NULL, this function is a no-op.
+ * @return ::BITFIELD_STATUS_OK, ::BITFIELD_STATUS_NULL_POINTER if @p src
+ *         or @p dst is NULL, or ::BITFIELD_STATUS_TRUNCATED if @p dst
+ *         holds fewer bytes than the source words contain.
+ *
+ * Bytes are produced LSB first. On truncation all @p dst_len bytes are
+ * written; when the source is shorter, bytes past it are left unchanged.
  */
-void bitfield16_unpack(const uint16_t *src, uint_least8_t src_len,
-                       uint_least8_t *dst, uint_least8_t dst_len);
+bitfield_status_t bitfield16_unpack(const uint16_t *src, uint_least8_t src_len,
+                                    uint_least8_t *dst, uint_least8_t dst_len);
 
 /** @} */
 
@@ -150,9 +183,11 @@ void bitfield16_unpack(const uint16_t *src, uint_least8_t src_len,
  * @param bit_pos Bit position (0 = LSB, 31 = MSB)
  * @param value   Boolean value to set (true = 1, false = 0)
  *
- * If @p data is NULL or @p bit_pos >= 32, this function is a no-op.
+ * @return ::BITFIELD_STATUS_OK, ::BITFIELD_STATUS_NULL_POINTER if @p data
+ *         is NULL, or ::BITFIELD_STATUS_OUT_OF_RANGE if @p bit_pos >= 32.
  */
-void bitfield32_set(uint32_t *data, uint_least8_t bit_pos, bool value);
+bitfield_status_t bitfield32_set(uint32_t *data, uint_least8_t bit_pos,
+                                 bool value);
 
 /** Get the value of a single bit in a 32-bit field
  *
@@ -169,9 +204,10 @@ bool bitfield32_get(const uint32_t *data, uint_least8_t bit_pos);
  * @param data    Pointer to the 32-bit field
  * @param bit_pos Bit position (0 = LSB, 31 = MSB)
  *
- * If @p data is NULL or @p bit_pos >= 32, this function is a no-op.
+ * @return ::BITFIELD_STATUS_OK, ::BITFIELD_STATUS_NULL_POINTER if @p data
+ *         is NULL, or ::BITFIELD_STATUS_OUT_OF_RANGE if @p bit_pos >= 32.
  */
-void bitfield32_clear(uint32_t *data, uint_least8_t bit_pos);
+bitfield_status_t bitfield32_clear(uint32_t *data, uint_least8_t bit_pos);
 
 /** Set a range of bits in a 32-bit field
  *
@@ -180,12 +216,14 @@ void bitfield32_clear(uint32_t *data, uint_least8_t bit_pos);
  * @param end   End bit position (inclusive, must be < 32)
  * @param value Value to write (LSB of value maps to @p start)
  *
+ * @return ::BITFIELD_STATUS_OK, ::BITFIELD_STATUS_NULL_POINTER if @p data
+ *         is NULL, or ::BITFIELD_STATUS_OUT_OF_RANGE if @p start > @p end
+ *         or @p end >= 32.
+ *
  * Bits outside the range [@p start, @p end] are preserved.
- * If @p data is NULL, @p start > @p end, or @p end >= 32, this
- * function is a no-op.
  */
-void bitfield32_set_range(uint32_t *data, uint_least8_t start,
-                          uint_least8_t end, uint32_t value);
+bitfield_status_t bitfield32_set_range(uint32_t *data, uint_least8_t start,
+                                       uint_least8_t end, uint32_t value);
 
 /** Get a range of bits from a 32-bit field
  *
@@ -228,12 +266,17 @@ uint_least8_t bitfield32_count_unset(const uint32_t *data,
  * @param dst     Destination array of 32-bit words
  * @param dst_len Length of destination array in words
  *
- * Bytes are packed four at a time into each destination word, LSB first.
- * If the destination fills before all source bytes are consumed, packing
- * stops silently. If @p src or @p dst is NULL, this function is a no-op.
+ * @return ::BITFIELD_STATUS_OK, ::BITFIELD_STATUS_NULL_POINTER if @p src
+ *         or @p dst is NULL, or ::BITFIELD_STATUS_TRUNCATED if @p dst
+ *         holds fewer words than the source needs.
+ *
+ * Bytes are packed four at a time into each destination word, LSB first;
+ * a final partial word has its unused upper bytes zeroed. On truncation
+ * all @p dst_len words are written.
  */
-void bitfield32_pack(const uint_least8_t *src, uint_least8_t src_len,
-                     uint32_t *dst, uint_least8_t dst_len);
+bitfield_status_t bitfield32_pack(const uint_least8_t *src,
+                                  uint_least8_t src_len, uint32_t *dst,
+                                  uint_least8_t dst_len);
 
 /** Unpack an array of 32-bit words into a byte array (little-endian)
  *
@@ -242,10 +285,15 @@ void bitfield32_pack(const uint_least8_t *src, uint_least8_t src_len,
  * @param dst     Destination byte array
  * @param dst_len Length of destination array in bytes
  *
- * If @p src or @p dst is NULL, this function is a no-op.
+ * @return ::BITFIELD_STATUS_OK, ::BITFIELD_STATUS_NULL_POINTER if @p src
+ *         or @p dst is NULL, or ::BITFIELD_STATUS_TRUNCATED if @p dst
+ *         holds fewer bytes than the source words contain.
+ *
+ * Bytes are produced LSB first. On truncation all @p dst_len bytes are
+ * written; when the source is shorter, bytes past it are left unchanged.
  */
-void bitfield32_unpack(const uint32_t *src, uint_least8_t src_len,
-                       uint_least8_t *dst, uint_least8_t dst_len);
+bitfield_status_t bitfield32_unpack(const uint32_t *src, uint_least8_t src_len,
+                                    uint_least8_t *dst, uint_least8_t dst_len);
 
 /** @} */
 
