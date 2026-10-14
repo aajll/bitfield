@@ -125,8 +125,8 @@ jobs:
             --html-details coverage-report/index.html \
             --txt coverage-report/summary.txt \
             --print-summary \
-            --fail-under-line 80 \
-            --fail-under-branch 70
+            --fail-under-line 100 \
+            --fail-under-branch 100
 
       - name: Upload coverage report
         if: always()

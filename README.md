@@ -80,35 +80,35 @@ position range differ.
 ### 16-bit family (`uint16_t` fields, bit positions 0–15)
 
 ```c
-void     bitfield16_set(uint16_t *data, uint_least8_t bit_pos, bool value);
-bool     bitfield16_get(const uint16_t *data, uint_least8_t bit_pos);
-void     bitfield16_clear(uint16_t *data, uint_least8_t bit_pos);
+bitfield_status_t bitfield16_set(uint16_t *data, uint_least8_t bit_pos, bool value);
+bool              bitfield16_get(const uint16_t *data, uint_least8_t bit_pos);
+bitfield_status_t bitfield16_clear(uint16_t *data, uint_least8_t bit_pos);
 
-void     bitfield16_set_range(uint16_t *data, uint_least8_t start, uint_least8_t end, uint32_t value);
-uint32_t bitfield16_get_range(const uint16_t *data, uint_least8_t start, uint_least8_t end);
+bitfield_status_t bitfield16_set_range(uint16_t *data, uint_least8_t start, uint_least8_t end, uint32_t value);
+uint32_t          bitfield16_get_range(const uint16_t *data, uint_least8_t start, uint_least8_t end);
 
-uint_least8_t  bitfield16_count_set(const uint16_t *data, uint_least8_t num_bits);
-uint_least8_t  bitfield16_count_unset(const uint16_t *data, uint_least8_t num_bits);
+uint_least8_t     bitfield16_count_set(const uint16_t *data, uint_least8_t num_bits);
+uint_least8_t     bitfield16_count_unset(const uint16_t *data, uint_least8_t num_bits);
 
-void     bitfield16_pack(const uint_least8_t *src, uint_least8_t src_len, uint16_t *dst, uint_least8_t dst_len);
-void     bitfield16_unpack(const uint16_t *src, uint_least8_t src_len, uint_least8_t *dst, uint_least8_t dst_len);
+bitfield_status_t bitfield16_pack(const uint_least8_t *src, uint_least8_t src_len, uint16_t *dst, uint_least8_t dst_len);
+bitfield_status_t bitfield16_unpack(const uint16_t *src, uint_least8_t src_len, uint_least8_t *dst, uint_least8_t dst_len);
 ```
 
 ### 32-bit family (`uint32_t` fields, bit positions 0–31)
 
 ```c
-void     bitfield32_set(uint32_t *data, uint_least8_t bit_pos, bool value);
-bool     bitfield32_get(const uint32_t *data, uint_least8_t bit_pos);
-void     bitfield32_clear(uint32_t *data, uint_least8_t bit_pos);
+bitfield_status_t bitfield32_set(uint32_t *data, uint_least8_t bit_pos, bool value);
+bool              bitfield32_get(const uint32_t *data, uint_least8_t bit_pos);
+bitfield_status_t bitfield32_clear(uint32_t *data, uint_least8_t bit_pos);
 
-void     bitfield32_set_range(uint32_t *data, uint_least8_t start, uint_least8_t end, uint32_t value);
-uint32_t bitfield32_get_range(const uint32_t *data, uint_least8_t start, uint_least8_t end);
+bitfield_status_t bitfield32_set_range(uint32_t *data, uint_least8_t start, uint_least8_t end, uint32_t value);
+uint32_t          bitfield32_get_range(const uint32_t *data, uint_least8_t start, uint_least8_t end);
 
-uint_least8_t  bitfield32_count_set(const uint32_t *data, uint_least8_t num_bits);
-uint_least8_t  bitfield32_count_unset(const uint32_t *data, uint_least8_t num_bits);
+uint_least8_t     bitfield32_count_set(const uint32_t *data, uint_least8_t num_bits);
+uint_least8_t     bitfield32_count_unset(const uint32_t *data, uint_least8_t num_bits);
 
-void     bitfield32_pack(const uint_least8_t *src, uint_least8_t src_len, uint32_t *dst, uint_least8_t dst_len);
-void     bitfield32_unpack(const uint32_t *src, uint_least8_t src_len, uint_least8_t *dst, uint_least8_t dst_len);
+bitfield_status_t bitfield32_pack(const uint_least8_t *src, uint_least8_t src_len, uint32_t *dst, uint_least8_t dst_len);
+bitfield_status_t bitfield32_unpack(const uint32_t *src, uint_least8_t src_len, uint_least8_t *dst, uint_least8_t dst_len);
 ```
 
 ### CRC (field-width independent)
@@ -121,8 +121,7 @@ uint16_t bitfield_crc16(const uint_least8_t *data, uint16_t length, uint16_t pol
 
 All public APIs validate pointers and bit indices/ranges at the API boundary.
 
-- Passing a `NULL` pointer is safe; mutating functions become no-ops.
-- Out-of-range bit positions/ranges are ignored.
+- Functions that modify a field or buffer return `bitfield_status_t`: `BITFIELD_STATUS_OK`, `BITFIELD_STATUS_NULL_POINTER` or `BITFIELD_STATUS_OUT_OF_RANGE` (nothing written), or `BITFIELD_STATUS_TRUNCATED` from `pack`/`unpack` when the destination is too small (filled as far as it goes). Callers that ignore the result compile unchanged.
 - Value-returning functions return a safe default (`false` or `0U`) on invalid input.
 
 ## Building

@@ -8,10 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `bitfield_status_t`, returned by `set`, `clear`, `set_range`, `pack` and `unpack` in both families, which previously returned `void`. Invalid arguments report `BITFIELD_STATUS_NULL_POINTER` or `BITFIELD_STATUS_OUT_OF_RANGE`, and a destination too small for `pack` or `unpack` reports `BITFIELD_STATUS_TRUNCATED`. Calls that discard the result compile unchanged; code that stores these functions in `void`-returning function pointers needs the new type.
 - CI cross-builds the library with TI C2000 CGT 22.6.2 and 25.11.1 under the COFF and EABI object formats, with warnings as errors.
 
 ### Changed
 
+- Status cases are tested in their own executable, and CI gates line and branch coverage at 100 %.
 - Standardised CI, security policy, contributor guidance, SPDX headers, pkg-config generation, and coverage thresholds with the primitive family baseline.
 
 ### Fixed
