@@ -90,14 +90,14 @@ test_bitfield_range_16(void)
         uint16_t value = 0U;
 
         /* Sub-range write and read-back */
-        bitfield16_set_range(&value, 2U, 4U, 0b101U);
-        assert(bitfield16_get_range(&value, 2U, 4U) == 0b101U);
+        bitfield16_set_range(&value, 2U, 4U, 0x5U);
+        assert(bitfield16_get_range(&value, 2U, 4U) == 0x5U);
 
-        bitfield16_set_range(&value, 0U, 1U, 0b11U);
-        assert(bitfield16_get_range(&value, 0U, 1U) == 0b11U);
+        bitfield16_set_range(&value, 0U, 1U, 0x3U);
+        assert(bitfield16_get_range(&value, 0U, 1U) == 0x3U);
 
         /* Prior range must be unchanged */
-        assert(bitfield16_get_range(&value, 2U, 4U) == 0b101U);
+        assert(bitfield16_get_range(&value, 2U, 4U) == 0x5U);
 
         /* Upper byte */
         bitfield16_set_range(&value, 8U, 15U, 0xABU);
@@ -124,14 +124,14 @@ test_bitfield_range_32(void)
         uint32_t value = 0U;
 
         /* Sub-range write and read-back */
-        bitfield32_set_range(&value, 2U, 4U, 0b101U);
-        assert(bitfield32_get_range(&value, 2U, 4U) == 0b101U);
+        bitfield32_set_range(&value, 2U, 4U, 0x5U);
+        assert(bitfield32_get_range(&value, 2U, 4U) == 0x5U);
 
-        bitfield32_set_range(&value, 0U, 1U, 0b11U);
-        assert(bitfield32_get_range(&value, 0U, 1U) == 0b11U);
+        bitfield32_set_range(&value, 0U, 1U, 0x3U);
+        assert(bitfield32_get_range(&value, 0U, 1U) == 0x3U);
 
         /* Prior range must be unchanged */
-        assert(bitfield32_get_range(&value, 2U, 4U) == 0b101U);
+        assert(bitfield32_get_range(&value, 2U, 4U) == 0x5U);
 
         /* Upper half */
         bitfield32_set_range(&value, 16U, 31U, 0xCAFEU);
@@ -510,9 +510,9 @@ test_mixed_width_usage(void)
         uint32_t period_reg = 0U;
 
         /* Set mode bits in 16-bit control register */
-        bitfield16_set_range(&ctrl_reg, 0U, 1U, 0b10U); /* mode = 2 */
+        bitfield16_set_range(&ctrl_reg, 0U, 1U, 0x2U); /* mode = 2 */
         bitfield16_set(&ctrl_reg, 4U, true);            /* enable bit */
-        assert(bitfield16_get_range(&ctrl_reg, 0U, 1U) == 0b10U);
+        assert(bitfield16_get_range(&ctrl_reg, 0U, 1U) == 0x2U);
         assert(bitfield16_get(&ctrl_reg, 4U) == true);
 
         /* Set period value in 32-bit data register */
@@ -596,7 +596,7 @@ test_range_overlap_16(void)
 
         /* Get partial overlap: bits 2-5 */
         uint32_t partial = bitfield16_get_range(&value, 2U, 5U);
-        assert(partial == 0b1111U);
+        assert(partial == 0xFU);
 
         printf("Range overlap (16-bit): PASSED\n");
 }

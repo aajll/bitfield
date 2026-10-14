@@ -44,6 +44,7 @@ jobs:
           --buildtype=debug
           -Dbuild_tests=true
           -Db_sanitize=address,undefined
+          -Dwerror=true
 
       - name: Build
         run: meson compile -C build
