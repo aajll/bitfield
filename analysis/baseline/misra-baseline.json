@@ -1,0 +1,17 @@
+{
+  "schema": "misch/baseline@2",
+  "fingerprints": {
+    "1ea9ecbc12f8": {
+      "rule_id": "misra-c2012-15.5",
+      "file": "src/bitfield.c",
+      "message": "misra violation (use --rule-texts=<file> to get proper output)",
+      "count": 25
+    },
+    "6693cf230135": {
+      "rule_id": "misra-c2012-8.7",
+      "file": "src/bitfield.c",
+      "message": "misra violation (use --rule-texts=<file> to get proper output)",
+      "count": 17
+    }
+  }
+}

@@ -1,6 +1,8 @@
-/** @file test_bitfield.c
- * @brief Unit tests for bitfield library — covers both bitfield16_* and
- *        bitfield32_* families.
+/*
+ * SPDX-License-Identifier: MIT
+ *
+ * @file: test_bitfield.c
+ * @brief Unit tests for the bitfield16_* and bitfield32_* families.
  */
 
 #include <assert.h>
@@ -511,7 +513,7 @@ test_mixed_width_usage(void)
 
         /* Set mode bits in 16-bit control register */
         bitfield16_set_range(&ctrl_reg, 0U, 1U, 0x2U); /* mode = 2 */
-        bitfield16_set(&ctrl_reg, 4U, true);            /* enable bit */
+        bitfield16_set(&ctrl_reg, 4U, true);           /* enable bit */
         assert(bitfield16_get_range(&ctrl_reg, 0U, 1U) == 0x2U);
         assert(bitfield16_get(&ctrl_reg, 4U) == true);
 

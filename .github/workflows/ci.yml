@@ -17,15 +17,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
+      - uses: astral-sh/setup-uv@v10.1.0
 
-      - name: Install ninja
-        run: sudo apt-get update -q && sudo apt-get install -y ninja-build
-
-      - name: Install meson
-        run: pip install meson
+      - name: Install meson and ninja
+        run: uv tool install meson && uv tool install ninja
 
       - name: Configure (debug + sanitizers)
         run: >
@@ -60,15 +55,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
+      - uses: astral-sh/setup-uv@v10.1.0
 
-      - name: Install ninja
-        run: sudo apt-get update -q && sudo apt-get install -y ninja-build
-
-      - name: Install meson
-        run: pip install meson
+      - name: Install meson and ninja
+        run: uv tool install meson && uv tool install ninja
 
       - name: Configure (release)
         run: >
@@ -92,15 +82,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
+      - uses: astral-sh/setup-uv@v10.1.0
 
-      - name: Install ninja
-        run: sudo apt-get update -q && sudo apt-get install -y ninja-build
-
-      - name: Install meson and gcovr
-        run: pip install meson gcovr
+      - name: Install meson, ninja and gcovr
+        run: uv tool install meson && uv tool install ninja && uv tool install gcovr
 
       - name: Configure (coverage)
         run: >
@@ -155,12 +140,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
+      - uses: astral-sh/setup-uv@v10.1.0
 
-      - name: Install Meson and Ninja
-        run: python -m pip install --upgrade meson ninja
+      - name: Install meson and ninja
+        run: uv tool install meson && uv tool install ninja
 
       - name: Cache TI C2000 CGT
         id: cache-cgt
@@ -202,3 +185,51 @@ jobs:
               -Dbuild_tests=false -Dwerror=true
             meson compile -C "build-$abi"
           done
+
+  # ---------------------------------------------------------------------------
+  # Formatting, with the clang-format release pinned in scripts/format.sh.
+  # ---------------------------------------------------------------------------
+  format:
+    name: "clang-format"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v10.1.0
+
+      - name: Check formatting
+        run: scripts/format.sh
+
+  # ---------------------------------------------------------------------------
+  # MISRA C:2023 analysis with misch. CI fails on any finding outside the
+  # baseline in analysis/baseline/.
+  # ---------------------------------------------------------------------------
+  misra:
+    name: "MISRA (misch)"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v10.1.0
+
+      # Ubuntu 24.04 ships cppcheck 2.13, whose findings differ from current
+      # releases. The Homebrew bottle is current; brew is preinstalled.
+      - name: Install cppcheck
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          brew install cppcheck
+          echo "$(brew --prefix)/bin" >> "$GITHUB_PATH"
+          cppcheck --version
+
+      - name: Install meson, ninja and misch
+        run: uv tool install meson && uv tool install ninja && uv tool install misch
+
+      - name: Configure (compile database)
+        run: meson setup build --buildtype=debug -Dbuild_tests=true
+
+      - name: Analyse
+        run: misch run --baseline -v
