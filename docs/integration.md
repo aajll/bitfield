@@ -50,8 +50,6 @@ The headers install to a `bitfield/` subdirectory, and the `pkg-config` flags ad
 #include "bitfield.h"
 ```
 
-`bitfield_version.h` is installed beside it as a deprecated header that includes `bitfield.h`.
-
 ## Build and test
 
 ```sh
