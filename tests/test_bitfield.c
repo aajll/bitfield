@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 #include "bitfield.h"
+#include "bitfield_version.h"
 
 /* ── 16-bit: individual bit operations ─────────────────────────────────── */
 
@@ -682,6 +683,17 @@ test_range_32_multiword(void)
         printf("Range 32-bit multiword: PASSED\n");
 }
 
+static void
+test_version(void)
+{
+        assert(BITFIELD_VERSION_NUMBER
+               == ((BITFIELD_VERSION_MAJOR * 10000L)
+                   + (BITFIELD_VERSION_MINOR * 100L) + BITFIELD_VERSION_PATCH));
+        assert(BITFIELD_VERSION[0] != '\0');
+
+        printf("Version macros: PASSED\n");
+}
+
 /* ── main ──────────────────────────────────────────────────────────────── */
 
 int
@@ -712,6 +724,7 @@ main(void)
         test_pack_unpack_misaligned_16();
         test_count_partial_patterns_16();
         test_range_32_multiword();
+        test_version();
 
         printf("\nAll tests PASSED!\n");
         return 0;

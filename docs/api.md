@@ -118,3 +118,25 @@ uint16_t crc = (uint16_t)ucrc_compute(&ucrc_crc16_ccitt_false, data, len);
 ```
 
 For another polynomial, define a `ucrc_model_t` with that `poly`, `init` `0xFFFF`, `xorout` `0`, `width` 16, no reflection and a `NULL` table.
+
+## Version
+
+`bitfield.h` defines the release it belongs to, so a copied-in header still identifies itself:
+
+<!-- snippet: skip -->
+```c
+#define BITFIELD_VERSION_MAJOR 1
+#define BITFIELD_VERSION_MINOR 3
+#define BITFIELD_VERSION_PATCH 3
+#define BITFIELD_VERSION "1.3.3"
+```
+
+`BITFIELD_VERSION_NUMBER` is `MAJOR * 10000 + MINOR * 100 + PATCH` as a `long`, so it holds any version where `int` is 16 bits. Compare it in the preprocessor to require a minimum release:
+
+```c
+#if BITFIELD_VERSION_NUMBER < 10303L
+#error "bitfield 1.3.3 or later is required"
+#endif
+```
+
+`bitfield_version.h` is a deprecated header that includes `bitfield.h`, kept so existing includes compile until the next major release.

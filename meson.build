@@ -2,31 +2,32 @@ project(
   'bitfield',
   'c',
   version: '1.3.3',
+  meson_version: '>=0.57.0',
   default_options: ['c_std=c11', 'warning_level=3'],
   license: 'MIT',
 )
 
-# ── Version header ─────────────────────────────────────────────────────────────
+# ── Version ────────────────────────────────────────────────────────────────────
+# include/bitfield.h defines the version macros, so a copy-in build has them.
+# Configuration fails when they differ from the project version.
 
-ver = meson.project_version().split('.')
-
-major = ver[0].to_int()
-minor = ver[1].to_int()
-patch = ver[2].to_int()
-
-conf = configuration_data()
-conf.set_quoted('BITFIELD_VERSION', meson.project_version())
-conf.set('BITFIELD_VERSION_MAJOR', major)
-conf.set('BITFIELD_VERSION_MINOR', minor)
-conf.set('BITFIELD_VERSION_PATCH', patch)
-
-configure_file(
-  input: 'config' / 'bitfield_version.h.in',
-  output: 'bitfield_version.h',
-  configuration: conf,
-  install: true,
-  install_dir: get_option('includedir') / 'bitfield',
-)
+fs = import('fs')
+version_parts = meson.project_version().split('.')
+version_macros = {
+  'BITFIELD_VERSION_MAJOR': version_parts[0],
+  'BITFIELD_VERSION_MINOR': version_parts[1],
+  'BITFIELD_VERSION_PATCH': version_parts[2],
+  'BITFIELD_VERSION': '"' + meson.project_version() + '"',
+}
+header_lines = []
+foreach line : fs.read('include' / 'bitfield.h').split('\n')
+  header_lines += ' '.join(line.split())
+endforeach
+foreach name, value : version_macros
+  if '#define @0@ @1@'.format(name, value) not in header_lines
+    error('include/bitfield.h must define @0@ as @1@'.format(name, value))
+  endif
+endforeach
 
 # ── Include directories ────────────────────────────────────────────────────────
 
@@ -47,7 +48,11 @@ bitfield_dep = declare_dependency(link_with: library, include_directories: publi
 
 meson.override_dependency('bitfield', bitfield_dep)
 
-install_headers('include/bitfield.h', subdir: 'bitfield')
+install_headers(
+  'include/bitfield.h',
+  'include/bitfield_version.h',
+  subdir: 'bitfield',
+)
 
 # ── pkg-config ─────────────────────────────────────────────────────────────────
 
