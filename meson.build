@@ -50,7 +50,6 @@ meson.override_dependency('bitfield', bitfield_dep)
 
 install_headers(
   'include/bitfield.h',
-  'include/bitfield_version.h',
   subdir: 'bitfield',
 )
 

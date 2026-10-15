@@ -15,11 +15,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- `bitfield.h` defines `BITFIELD_VERSION_MAJOR`, `_MINOR`, `_PATCH`, `BITFIELD_VERSION` and a new `BITFIELD_VERSION_NUMBER` (`long`, `MAJOR * 10000 + MINOR * 100 + PATCH`), so a copied-in header carries its version. `bitfield_version.h` is no longer generated; it is installed as a deprecated header that includes `bitfield.h`. Meson fails to configure when the header and `project(version:)` disagree, and the build needs Meson 0.57 or later.
+- `bitfield.h` defines `BITFIELD_VERSION_MAJOR`, `_MINOR`, `_PATCH`, `BITFIELD_VERSION` and a new `BITFIELD_VERSION_NUMBER` (`long`, `MAJOR * 10000 + MINOR * 100 + PATCH`), so a copied-in header carries its version. Meson fails to configure when the header and `project(version:)` disagree, and the build needs Meson 0.57 or later.
 - Status cases are tested in their own executable, and CI gates line and branch coverage at 100 %.
 - CI installs Meson, Ninja and gcovr with `uv` instead of `pip`.
 - The README is a short landing page, with integration, API and design documentation in `docs/`. A `bitfield docs examples` test compiles every C example in the documentation.
 - Standardised CI, security policy, contributor guidance, SPDX headers, pkg-config generation, and coverage thresholds with the primitive family baseline.
+
+
+### Removed
+
+- `bitfield_version.h`. `bitfield.h` defines the version macros.
 
 ### Deprecated
 
@@ -28,7 +33,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - Bit positions, counts, lengths and byte arrays use `uint_least8_t` instead of `uint8_t`, so `bitfield.h` compiles where `CHAR_BIT == 16`. Byte-addressed targets see the same types.
-- `bitfield_version.h` now defines `BITFIELD_VERSION` as a single string literal and `BITFIELD_VERSION_MAJOR`, `_MINOR` and `_PATCH` as integers, so the macros compile when used.
 
 ## [1.3.3] - 2026-03-16
 

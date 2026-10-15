@@ -11,7 +11,6 @@
 #include <stdio.h>
 
 #include "bitfield.h"
-#include "bitfield_version.h"
 
 /* ── 16-bit: individual bit operations ─────────────────────────────────── */
 

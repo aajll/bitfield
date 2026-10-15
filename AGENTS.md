@@ -39,7 +39,7 @@ scripts/format.sh --fix    # rewrite in place
 
 ### 1.2 Notes
 
-- `include/bitfield.h` defines the version macros, and `meson setup` fails when they differ from `project(version:)`, so a release updates both. `include/bitfield_version.h` is a deprecated header that includes `bitfield.h`.
+- `include/bitfield.h` defines the version macros, and `meson setup` fails when they differ from `project(version:)`, so a release updates both.
 - The public header lives at `include/bitfield.h`; do not add a `src/bitfield.h` shim.
 - Regenerate the MISRA baseline only with `MISRA_RULE_TEXTS` unset (`env -u MISRA_RULE_TEXTS misch baseline`), because the rule texts change the recorded messages.
 

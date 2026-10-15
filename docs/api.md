@@ -138,5 +138,3 @@ For another polynomial, define a `ucrc_model_t` with that `poly`, `init` `0xFFFF
 #error "bitfield 1.3.3 or later is required"
 #endif
 ```
-
-`bitfield_version.h` is a deprecated header that includes `bitfield.h`, kept so existing includes compile until the next major release.
