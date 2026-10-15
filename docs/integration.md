@@ -22,7 +22,7 @@ Compile `bitfield.c` with your other sources and include the header:
 #include "bitfield.h"
 ```
 
-No generated header is needed. `bitfield_version.h` exists only in Meson builds.
+No generated header is needed. `bitfield.h` defines the version macros described in [api.md](api.md#version).
 
 ## Meson subproject
 
@@ -48,8 +48,9 @@ The headers install to a `bitfield/` subdirectory, and the `pkg-config` flags ad
 <!-- snippet: skip -->
 ```c
 #include "bitfield.h"
-#include "bitfield_version.h"
 ```
+
+`bitfield_version.h` is installed beside it as a deprecated header that includes `bitfield.h`.
 
 ## Build and test
 

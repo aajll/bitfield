@@ -65,4 +65,4 @@ The unit suite covers both families: every bit position, valid, invalid, and adj
 
 CI compiles the library with warnings as errors under TI C2000 Code Generation Tools 22.6.2.LTS and 25.11.1.LTS in C11 C28x mode, under both the COFF and EABI ABIs. This validates the source dialect and type assumptions only. Linking, target execution, and final map-file footprint remain consumer-owned checks.
 
-MISRA C:2023 analysis with `misch` runs against a recorded baseline in `analysis/baseline/`, and CI fails on any finding outside it.
+MISRA C:2023 analysis with `misch` runs against a recorded baseline in `analysis/baseline/`, and CI fails on any finding outside it. The version macros in `bitfield.h` carry an inline deviation of Rule 2.5 (unused macro), because they exist for consumers and the library does not use them.

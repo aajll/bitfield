@@ -29,6 +29,29 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/**
+ * @name Version
+ * @brief Release of this header, for diagnostics and @c #if checks.
+ *
+ * @details
+ *    @c BITFIELD_VERSION_NUMBER is @c MAJOR*10000 @c + @c MINOR*100
+ *    @c + @c PATCH with type @c long, so it cannot overflow where @c int is
+ *    16 bits. The Meson build fails to configure when these values differ
+ *    from the project version.
+ * @{
+ */
+/* cppcheck-suppress-begin misra-c2012-2.5 ; @deviation Public version macros
+ * for consumer diagnostics and #if checks; the library does not use them. */
+#define BITFIELD_VERSION_MAJOR 1
+#define BITFIELD_VERSION_MINOR 3
+#define BITFIELD_VERSION_PATCH 3
+#define BITFIELD_VERSION       "1.3.3"
+#define BITFIELD_VERSION_NUMBER                                                \
+        ((BITFIELD_VERSION_MAJOR * 10000L) + (BITFIELD_VERSION_MINOR * 100L)   \
+         + BITFIELD_VERSION_PATCH)
+/* cppcheck-suppress-end misra-c2012-2.5 ; @deviation As above. */
+/** @} */
+
 /** Result of a function that modifies a field or buffer.
  *
  * @details
