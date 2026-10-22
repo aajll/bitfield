@@ -33,6 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - Bit positions, counts, lengths and byte arrays use `uint_least8_t` instead of `uint8_t`, so `bitfield.h` compiles where `CHAR_BIT == 16`. Byte-addressed targets see the same types.
+- `pack` and `unpack` count words and octets in `uint_least32_t`. Where `CHAR_BIT == 16` a length can reach 65535, and the 16-bit `uint_fast16_t` counts wrapped: `bitfield32_unpack` with a length of 16384 or more, or `bitfield16_unpack` with 32768 or more, copied too few octets and could return `BITFIELD_STATUS_OK` instead of `BITFIELD_STATUS_TRUNCATED`, and `pack` computed too few words for a length near 65535. A static assertion keeps the count type wide enough on every target.
 
 ## [1.3.3] - 2026-03-16
 
