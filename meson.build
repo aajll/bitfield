@@ -3,7 +3,7 @@
 project(
   'bitfield',
   'c',
-  version: '1.3.3',
+  version: '1.4.0',
   meson_version: '>=0.57.0',
   default_options: ['c_std=c11', 'warning_level=3'],
   license: 'MIT',
