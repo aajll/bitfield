@@ -9,6 +9,16 @@
 
 #include "bitfield.h"
 
+/* Octet and word counts in pack and unpack. A length is a uint_least8_t,
+ * which is 16 bits wide where CHAR_BIT is 16, so an unpack count reaches
+ * four times 65535 and needs a type wider than 16 bits.
+ */
+typedef uint_least32_t bitfield_count_t;
+
+_Static_assert(
+    ((bitfield_count_t)UINT_LEAST32_MAX / 4U) >= UINT_LEAST8_MAX,
+    "bitfield_count_t must hold four times any uint_least8_t length");
+
 /* ── 16-bit operations ──────────────────────────────────────────────────────
  *
  * Range masks use a uint32_t accumulator, one word wider than uint16_t, so
@@ -136,11 +146,12 @@ bitfield16_pack(const uint_least8_t *src, uint_least8_t src_len, uint16_t *dst,
                 return BITFIELD_STATUS_NULL_POINTER;
         }
 
-        const uint_fast16_t words = ((uint_fast16_t)src_len + (2U - 1U)) / 2U;
-        const uint_fast16_t n = (words < dst_len) ? words : dst_len;
+        const bitfield_count_t words =
+            ((bitfield_count_t)src_len + (2U - 1U)) / 2U;
+        const bitfield_count_t n = (words < dst_len) ? words : dst_len;
 
-        for (uint_fast16_t w = 0U; w < n; w++) {
-                const uint_fast16_t i = 2U * w;
+        for (bitfield_count_t w = 0U; w < n; w++) {
+                const bitfield_count_t i = 2U * w;
                 uint32_t word = (uint32_t)src[i] & 0xFFU;
 
                 if ((i + 1U) < src_len) {
@@ -161,10 +172,10 @@ bitfield16_unpack(const uint16_t *src, uint_least8_t src_len,
                 return BITFIELD_STATUS_NULL_POINTER;
         }
 
-        const uint_fast16_t octets = 2U * (uint_fast16_t)src_len;
-        const uint_fast16_t n = (octets < dst_len) ? octets : dst_len;
+        const bitfield_count_t octets = 2U * (bitfield_count_t)src_len;
+        const bitfield_count_t n = (octets < dst_len) ? octets : dst_len;
 
-        for (uint_fast16_t b = 0U; b < n; b++) {
+        for (bitfield_count_t b = 0U; b < n; b++) {
                 dst[b] =
                     (uint_least8_t)((src[b / 2U] >> (8U * (b % 2U))) & 0xFFU);
         }
@@ -299,14 +310,15 @@ bitfield32_pack(const uint_least8_t *src, uint_least8_t src_len, uint32_t *dst,
                 return BITFIELD_STATUS_NULL_POINTER;
         }
 
-        const uint_fast16_t words = ((uint_fast16_t)src_len + (4U - 1U)) / 4U;
-        const uint_fast16_t n = (words < dst_len) ? words : dst_len;
+        const bitfield_count_t words =
+            ((bitfield_count_t)src_len + (4U - 1U)) / 4U;
+        const bitfield_count_t n = (words < dst_len) ? words : dst_len;
 
-        for (uint_fast16_t w = 0U; w < n; w++) {
-                const uint_fast16_t i = 4U * w;
+        for (bitfield_count_t w = 0U; w < n; w++) {
+                const bitfield_count_t i = 4U * w;
                 uint32_t word = 0U;
 
-                for (uint_fast16_t k = 0U; ((i + k) < src_len) && (k < 4U);
+                for (bitfield_count_t k = 0U; ((i + k) < src_len) && (k < 4U);
                      k++) {
                         word |= ((uint32_t)src[i + k] & 0xFFU) << (8U * k);
                 }
@@ -325,10 +337,10 @@ bitfield32_unpack(const uint32_t *src, uint_least8_t src_len,
                 return BITFIELD_STATUS_NULL_POINTER;
         }
 
-        const uint_fast16_t octets = 4U * (uint_fast16_t)src_len;
-        const uint_fast16_t n = (octets < dst_len) ? octets : dst_len;
+        const bitfield_count_t octets = 4U * (bitfield_count_t)src_len;
+        const bitfield_count_t n = (octets < dst_len) ? octets : dst_len;
 
-        for (uint_fast16_t b = 0U; b < n; b++) {
+        for (bitfield_count_t b = 0U; b < n; b++) {
                 dst[b] =
                     (uint_least8_t)((src[b / 4U] >> (8U * (b % 4U))) & 0xFFU);
         }
