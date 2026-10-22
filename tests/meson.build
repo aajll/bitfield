@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 foreach t : ['bitfield', 'status']
   exe = executable(
     'test_' + t,
