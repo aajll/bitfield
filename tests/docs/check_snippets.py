@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Compile or syntax-check the code examples in a project's markdown.
 
 usage: check_snippets.py --lang LANG [--root DIR] [--doc GLOB ...]
