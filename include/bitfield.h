@@ -43,9 +43,9 @@
 /* cppcheck-suppress-begin misra-c2012-2.5 ; @deviation Public version macros
  * for consumer diagnostics and #if checks; the library does not use them. */
 #define BITFIELD_VERSION_MAJOR 1
-#define BITFIELD_VERSION_MINOR 3
-#define BITFIELD_VERSION_PATCH 3
-#define BITFIELD_VERSION       "1.3.3"
+#define BITFIELD_VERSION_MINOR 4
+#define BITFIELD_VERSION_PATCH 0
+#define BITFIELD_VERSION       "1.4.0"
 #define BITFIELD_VERSION_NUMBER                                                \
         ((BITFIELD_VERSION_MAJOR * 10000L) + (BITFIELD_VERSION_MINOR * 100L)   \
          + BITFIELD_VERSION_PATCH)
